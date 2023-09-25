@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
@@ -66,12 +65,15 @@ public class StudentController {
 	}
 	
 	// Updates a student
-	@PutMapping("/student/{student_id}/status")
+	@PutMapping("/student/{student_id}")
 	@Transactional
-	public boolean deleteStudent(  @PathVariable int student_id, @RequestParam String newStatus  ) {
+	public boolean updateStudent(  @PathVariable int student_id, @RequestBody StudentDTO studentDto  ) {
 		Student student = studentRepository.findById(student_id).orElse(null);
 		if (student != null) {
-            student.setStatus(newStatus);
+            student.setName(studentDto.name());
+    		student.setEmail(studentDto.email());
+    		student.setStatusCode(studentDto.statusCode());
+    		student.setStatus(studentDto.status());
             studentRepository.save(student);
             return true;
         } else {
