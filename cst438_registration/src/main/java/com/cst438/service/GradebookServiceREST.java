@@ -3,6 +3,7 @@ package com.cst438.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +32,14 @@ public class GradebookServiceREST implements GradebookService {
 		System.out.println("Start Message "+ student_email +" " + course_id); 
 	
 		// TODO use RestTemplate to send message to gradebook service
-		
+		EnrollmentDTO enrollmentDTO = new EnrollmentDTO(0, student_email, student_name, course_id);
+		ResponseEntity<Void> response = restTemplate.postForEntity(gradebook_url, enrollmentDTO, Void.class);
+
+        if (response.getStatusCodeValue() == 200) {
+            System.out.println("Enrollment successful");
+        } else {
+            System.err.println("Enrollment failed. HTTP Status: " + response.getStatusCodeValue());
+        }
 	}
 	
 	@Autowired
@@ -45,5 +53,13 @@ public class GradebookServiceREST implements GradebookService {
 		System.out.println("Grades received "+grades.length);
 		
 		//TODO update grades in enrollment records with grades received from gradebook service
+		for(int i = 0; i < grades.length; i++) {
+			Enrollment enrollment = enrollmentRepository.findByEmailAndCourseId(grades[i].studentEmail(), course_id);
+			if(enrollment != null) {
+				enrollment.setCourseGrade(grades[i].grade());
+				enrollmentRepository.save(enrollment);
+			}
+		}
+		
 	}
 }
