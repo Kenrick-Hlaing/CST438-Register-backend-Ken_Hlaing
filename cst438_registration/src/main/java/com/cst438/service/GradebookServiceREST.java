@@ -24,8 +24,8 @@ public class GradebookServiceREST implements GradebookService {
 
 	private RestTemplate restTemplate = new RestTemplate();
 
-	@Value("${gradebook.url}")
-	private static String gradebook_url;
+	//@Value("${gradebook.url}")
+	private static String gradebook_url="http://localhost:8081/enrollment";
 
 	@Override
 	public void enrollStudent(String student_email, String student_name, int course_id) {
@@ -33,7 +33,7 @@ public class GradebookServiceREST implements GradebookService {
 	
 		// TODO use RestTemplate to send message to gradebook service
 		EnrollmentDTO enrollmentDTO = new EnrollmentDTO(0, student_email, student_name, course_id);
-		ResponseEntity<Void> response = restTemplate.postForEntity(gradebook_url, enrollmentDTO, Void.class);
+		ResponseEntity<EnrollmentDTO> response = restTemplate.postForEntity(gradebook_url, enrollmentDTO, EnrollmentDTO.class);
 
         if (response.getStatusCodeValue() == 200) {
             System.out.println("Enrollment successful");
