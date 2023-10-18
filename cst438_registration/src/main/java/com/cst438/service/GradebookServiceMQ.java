@@ -6,6 +6,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,12 @@ public class GradebookServiceMQ implements GradebookService {
 	@Autowired
 	EnrollmentRepository enrollmentRepository;
 	
+	@Bean
+	public Queue createQueue() {
+		return new Queue("registration-queue", true);
+	}
 	Queue gradebookQueue = new Queue("gradebook-queue", true);
+	// Queue registrationQueue = new Queue("registration-queue", true);
 
 	// send message to grade book service about new student enrollment in course
 	@Override
@@ -33,6 +39,9 @@ public class GradebookServiceMQ implements GradebookService {
 		System.out.println("Start Message "+ student_email +" " + course_id); 
 		// create EnrollmentDTO, convert to JSON string and send to gradebookQueue
 		// TODO
+		EnrollmentDTO enrollmentDTO = new EnrollmentDTO(0, student_email, student_name, course_id);
+		String jsonEnrollment = asJsonString(enrollmentDTO);
+	    rabbitTemplate.convertAndSend(gradebookQueue.getName(), jsonEnrollment);
 	}
 	
 	@RabbitListener(queues = "registration-queue")
@@ -47,6 +56,15 @@ public class GradebookServiceMQ implements GradebookService {
 		// deserialize the string message to FinalGradeDTO[] 
 		
 		// TODO
+		FinalGradeDTO[] grades = fromJsonString(message, FinalGradeDTO[].class);
+		
+		for(int i = 0; i < grades.length; i++) {
+			Enrollment enrollment = enrollmentRepository.findByEmailAndCourseId(grades[i].studentEmail(), grades[i].courseId());
+			if(enrollment != null) {
+				enrollment.setCourseGrade(grades[i].grade());
+				enrollmentRepository.save(enrollment);
+			}
+		}
 
 	}
 	
