@@ -15,6 +15,8 @@ public class Student {
 	private String email;
 	private int statusCode;
 	private String status;
+	private String password;
+	private String role;
 	
 	public Student() {
 		super();
@@ -49,6 +51,18 @@ public class Student {
 	}
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
 	}
 	@Override
 	public String toString() {

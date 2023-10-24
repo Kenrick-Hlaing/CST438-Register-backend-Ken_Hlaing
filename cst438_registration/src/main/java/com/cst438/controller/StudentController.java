@@ -3,6 +3,7 @@ package com.cst438.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +20,7 @@ import com.cst438.domain.Student;
 import com.cst438.domain.StudentDTO;
 import com.cst438.domain.StudentRepository;
 import com.cst438.service.GradebookService;
+import java.security.Principal;
 
 @RestController
 @CrossOrigin
@@ -44,6 +46,9 @@ public class StudentController {
 		newStudent.setEmail(studentDto.email());
 		newStudent.setStatusCode(studentDto.statusCode());
 		newStudent.setStatus(studentDto.status());
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		newStudent.setPassword(encoder.encode(studentDto.password()));
+		newStudent.setRole(studentDto.role());
 		return studentRepository.save(newStudent);
 	}
 	
@@ -87,4 +92,11 @@ public class StudentController {
         List<Student> students = (List<Student>) studentRepository.findAll();
         return students;
     }
+	
+	// Get Student By Email
+	@GetMapping("/student/{email}")
+	public Student getStudentByEmail(@PathVariable String email) {
+		Student student = studentRepository.findByEmail(email);
+	    return student;
+	}
 }

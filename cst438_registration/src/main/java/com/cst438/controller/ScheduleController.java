@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import java.security.Principal;
 
 import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
@@ -41,9 +42,9 @@ public class ScheduleController {
 	 * get current schedule for student.
 	 */
 	@GetMapping("/schedule")
-	public ScheduleDTO[] getSchedule( @RequestParam("year") int year, @RequestParam("semester") String semester ) {
+	public ScheduleDTO[] getSchedule( @RequestParam("year") int year, @RequestParam("semester") String semester, Principal principal ) {
 		System.out.println("/schedule called.");
-		String student_email = "test@csumb.edu";   // student's email 
+		String student_email = principal.getName();   // student's email 
 		
 		Student student = studentRepository.findByEmail(student_email);
 		if (student != null) {
@@ -60,8 +61,8 @@ public class ScheduleController {
 	 */
 	@PostMapping("/schedule/course/{id}")
 	@Transactional
-	public ScheduleDTO addCourse( @PathVariable int id  ) { 
-		String student_email = "test@csumb.edu";   // student's email 
+	public ScheduleDTO addCourse( @PathVariable int id, Principal principal ) { 
+		String student_email = principal.getName();   // student's email 
 		Student student = studentRepository.findByEmail(student_email);
 		Course course  = courseRepository.findById(id).orElse(null);
 		// student.status
@@ -87,8 +88,8 @@ public class ScheduleController {
 	 */
 	@DeleteMapping("/schedule/{enrollment_id}")
 	@Transactional
-	public void dropCourse(  @PathVariable int enrollment_id  ) {
-		String student_email = "test@csumb.edu";   // student's email 
+	public void dropCourse(  @PathVariable int enrollment_id, Principal principal ) {
+		String student_email = principal.getName();   // student's email 
 		// TODO  check that today's date is not past deadline to drop course.
 		Enrollment enrollment = enrollmentRepository.findById(enrollment_id).orElse(null);
 		// verify that student is enrolled in the course.
